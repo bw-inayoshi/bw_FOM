@@ -69,6 +69,18 @@
 			map.addControl(new GMapTypeControl());
 			map.addControl(new GOverviewMapControl());
 			map.setMapType(G_NORMAL_MAP);
+			
+			GEvent.addListener(map, "zoomend", function(oldLevel, newLevel){
+				var size = map.getSize();
+				var bounds = map.getBounds();
+				var lat = bounds.getNorthEast().lat() - bounds.getSouthWest().lat();
+				var lng = bounds.getNorthEast().lng() - bounds.getSouthWest().lng();
+				var msg = "Zoom:" + newLevel + "  "
+						+ "X:" + (lng/size.width) + "  "
+						+ "Y:" + (lat/size.height);
+						
+				document.getElementById("lengthmsg").innerText = msg;
+			});
 		}
 		
 		function unload(){
@@ -86,6 +98,8 @@
 	<span id="msg"></span>
 	<br>
 	<div id="map" style="width:800px; height:500px;"></div>
+	<br>
+	<span id="lengthmsg"></span>
 	<br>
 	グーグルマップの表示です。<br>
 	<br>

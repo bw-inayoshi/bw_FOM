@@ -5,7 +5,7 @@
 
 <web-app>
   
-  <!-- Servlets -->
+  <!-- Servlets
   <servlet>
     <servlet-name>greetServlet</servlet-name>
     <servlet-class>jp.baroque_w.server.GreetingServiceImpl</servlet-class>
@@ -15,7 +15,8 @@
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/bw_fom/greet</url-pattern>
   </servlet-mapping>
-  
+ -->
+   
   <!-- Default page to serve -->
   <welcome-file-list>
     <welcome-file>document.html</welcome-file>
