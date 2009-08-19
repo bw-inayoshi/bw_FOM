@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Google Map</title>
+	<script type="text/javascript" src="../js/flickr-search.js"></script>
+	<script type="text/javascript">
+	<!--
+		// Flickr検索終了後のコールバック関数
+		function jsonFlickrApi ( data ) {
+		    // データが取得できているかチェック
+		    if ( ! data ) return;
+		    if ( ! data.photos ) return;
+		    var photos = data.photos;
+		    if ( ! photos ) return;
+		    var list = data.photos.photo;
+		    if ( ! list ) return;
+		    if ( ! list.length ) return;
+		
+		    // 現在の表示内容をクリアする
+		    remove_children("photos_info");
+		    remove_children("photos_page_prev");
+		    remove_children("photos_page_next");
+		    remove_children("photos_page");
+		    remove_children( 'photos_here' );
+		    
+		    // 検索情報
+		    var info = document.createElement("div");
+		    info.style.textAlign = "right";
+		    info.innerText = photos.total
+		    			   + "件中 "
+		    			   + ((photos.page-1) * photos.perpage + 1)
+		    			   + " - "
+		    			   + (photos.page==photos.pages ? (photos.total) : (photos.page * photos.perpage))
+		    			   + " 件目";
+		    document.getElementById("photos_info").appendChild(info);
+		    
+		    // 前ページリンク表示
+		    if( photos.page == 1 ){
+			    var prevl = document.createElement("span");
+		    	prevl.style.color = "gray";
+		    	prevl.innerText = "＜前へ";
+		    	document.getElementById("photos_page_prev").appendChild(prevl);
+		    }else{
+			    var prevl = document.createElement("a");
+			    prevl.href = "javascript: search(" + (photos.page-1) + ");";
+		    	prevl.innerText = "＜前へ";
+		    	document.getElementById("photos_page_prev").appendChild(prevl);
+		    }
+
+		    // 次ページリンク表示
+		    if( photos.page == photos.pages ){
+			    var nextl = document.createElement("span");
+		    	nextl.style.color = "gray";
+		    	nextl.innerText = "次へ＞";
+		    	document.getElementById("photos_page_next").appendChild(nextl);
+		    }else{
+			    var nextl = document.createElement("a");
+			    nextl.href = "javascript: search(" + (photos.page+1) + ");";
+		    	nextl.innerText = "次へ＞";
+		    	document.getElementById("photos_page_next").appendChild(nextl);
+		    }
+	    	
+	    	// ページリンク表示
+	    	var pagel = document.createElement("span");
+	    	var pageltop = photos.page - 9;
+	    	if( pageltop < 1 ){
+	    		pageltop = 1;
+	    	}
+	    	var pagelnum = (photos.page - pageltop) + 10;
+	    	
+	    	for(var i = 0; i < pagelnum; i++){
+	    		if( pageltop + i > photos.pages ){
+	    			break;
+	    		}
+	    		
+	    		var pagela = null;
+	    		if( pageltop + i == photos.page ){
+	    			pagela = document.createElement("span");
+	    			pagela.style.color = "gray";
+	    		}else{
+	    			pagela = document.createElement("a");
+	    			pagela.href = "javascript: search(" + (pageltop+i) + ");";
+	    		}
+	    		pagela.innerText = (pageltop+i) + " ";
+	    		pagel.appendChild(pagela);
+	    	}
+	    	document.getElementById("photos_page").appendChild(pagel);
+	    	
+		
+		    // 各画像を表示する
+		    var div = document.getElementById( 'photos_here' );
+		    for( var i=0; i<list.length; i++ ) {
+		        var photo = list[i];
+		
+		        // a 要素の生成
+		        var atag = document.createElement( 'a' );
+				atag.href = 'http://static.flickr.com/'+photo.server+
+		                  '/'+photo.id+'_'+photo.secret+'.jpg';
+		        atag.target = "_blank";
+		
+		        // img 要素の生成
+		        var img = document.createElement( 'img' );
+		        img.src = 'http://static.flickr.com/'+photo.server+
+		                  '/'+photo.id+'_'+photo.secret+'_s.jpg';
+		        img.style.border = '0';
+		        atag.appendChild( img );
+		        div.appendChild( atag );
+		        
+		        if( (i+1) % 10 == 0 ){
+		        	div.appendChild( document.createElement("br") );
+		        }
+		    }
+		}
+
+		function search(pagenum) {
+			var textvalue = form.search_save.value;
+			form.search_text.value = textvalue;
+			photo_search({ text: textvalue, page: pagenum, extras: "geo" }, "jsonFlickrApi");
+		}
+		
+		function newSearch(){
+			form.search_save.value = form.search_text.value;
+			search(1);
+			return false;
+		}
+	//-->
+	</script>
+</head>
+<body>
+	<h1>Flickrテスト</h1>
+	<form name="form" action="#" onsubmit="return newSearch();">
+		<input type="text" name="search_text">
+		<input type="hidden" name="search_save">
+		<input type="submit" value="検索"><br>
+	</form>
+	<br>
+	<div id="photos_info"></div>
+	<table width="100%" summary="">
+		<tr>
+			<td align="left" id="photos_page_prev"></td>
+			<td align="center" id="photos_page"></td>
+			<td align="right" id="photos_page_next"></td>
+		</tr>
+	</table>
+	<div id="photos_here"></div>
+</body>
+</html>
