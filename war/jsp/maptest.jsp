@@ -62,6 +62,8 @@
 			msg.innerText = "選択を終了するにはダブルクリックか始点をクリックしてください。";
 	    }
 	
+		var sizecheck = null;
+		
 		function onLoad() {
 			map = new GMap2(document.getElementById("map"));
 			map.setCenter(new GLatLng(35.53222622770337,139.6973419189453),14);
@@ -73,19 +75,42 @@
 			GEvent.addListener(map, "zoomend", function(oldLevel, newLevel){
 				var size = map.getSize();
 				var bounds = map.getBounds();
-				var lat = bounds.getNorthEast().lat() - bounds.getSouthWest().lat();
-				var lng = bounds.getNorthEast().lng() - bounds.getSouthWest().lng();
+				var west = bounds.getSouthWest().lng();
+				var south = bounds.getSouthWest().lat();
+				var east = bounds.getNorthEast().lng();
+				var north = bounds.getNorthEast().lat();
+				var lat = north - south;
+				var lng = east - west;
 				var msg = "Zoom:" + newLevel + "  "
 						+ "X:" + (lng/size.width) + "  "
 						+ "Y:" + (lat/size.height);
-						
+				
 				document.getElementById("lengthmsg").innerText = msg;
+				
+				if(sizecheck != null){
+		    		map.removeOverlay(sizecheck);
+				}
+				var west = bounds.getSouthWest().lng();
+				var south = bounds.getSouthWest().lat();
+				var east = bounds.getNorthEast().lng();
+				var north = bounds.getNorthEast().lat();
+				points = new Array();
+				points[0] = new GLatLng(south, west);
+				points[1] = new GLatLng(south, east);
+				points[2] = new GLatLng(north, east);
+				points[3] = new GLatLng(north, west);
+				points[4] = new GLatLng(south, west);
+				sizecheck = new GPolyline(points, "#FF0000", 2);
+				map.addOverlay(sizecheck);
 			});
 		}
 		
 		function unload(){
 	    	if(bound != null){
 	    		map.removeOverlay(bound);
+	    	}
+	    	if(sizecheck != null){
+	    		map.removeOverlay(sizecheck);
 	    	}
 	    	
 			GUnload();
@@ -100,6 +125,7 @@
 	<div id="map" style="width:800px; height:500px;"></div>
 	<br>
 	<span id="lengthmsg"></span>
+	<br>
 	<br>
 	グーグルマップの表示です。<br>
 	<br>

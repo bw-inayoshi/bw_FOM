@@ -12,6 +12,8 @@
 			con.fillStyle = "rgba(255,0,0,1)";
 			con.fillRect(20,40,200,150);
 		}
+		
+		sessionStorage.msg = "テスト";
 	//-->
 	</script>
 </head>
@@ -19,5 +21,7 @@
 	<h1>Flickrテスト</h1>
 	<canvas id="canvas1" width="320" height="240" style="border:1px black solid">
 	</canvas>
+	<br>
+	<input type="button" value="ストレージテスト" onclick="alert(sessionStorage.msg);">
 </body>
 </html>
