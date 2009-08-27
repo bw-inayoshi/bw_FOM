@@ -37,7 +37,7 @@ function remove_children ( id ) {
     }
 };
 
-// オブジェクトからクエリー文字列を生成する関数
+// オブジェクトからクエリー文字列を生成する
 function obj2query ( obj ) {
     var list = [];
     for( var key in obj ) {
@@ -49,7 +49,7 @@ function obj2query ( obj ) {
     return query;
 }
 
-// Flickr検索終了後のコールバック関数
+// Flickr検索終了後のコールバック
 function jsonFlickrApiDefault ( data ) {
     // データが取得できているかチェック
     if ( ! data ) return;
@@ -166,7 +166,7 @@ function isInBound(photo){
 }
 
 // 近いと判断する距離
-var NEAR_AREA_X = 12;
+var NEAR_AREA_X = 15;
 var NEAR_AREA_Y = 20;
 
 // 近くのデータのインデックスリストを取得
@@ -211,12 +211,14 @@ function getNearData(zoomlv, photo, adata){
 			continue;
 		}
 		
+		// グループ候補から一番近いデータを取る
 		var nearest = getNearestDataIndex(zoomlv, adata[ anear[k] ], adata);
 		if(nearest == -1){
 			arnear.push(anear[k]);
 			continue;
 		}
 		
+		// 一番近いデータがグループ候補内にあればグループとする
 		var isnear = false;
 		for(var m = 0; m < anear.length; m++){
 			if(anear[m] == nearest){

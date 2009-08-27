@@ -19,7 +19,7 @@
    
   <!-- Default page to serve -->
   <welcome-file-list>
-    <welcome-file>document.html</welcome-file>
+    <welcome-file>jsp/FlickrOnMap.jsp</welcome-file>
   </welcome-file-list>
 
 </web-app>

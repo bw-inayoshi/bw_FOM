@@ -7,21 +7,55 @@
 	<!--
 		
 		function onLoad(){
-			var canvas1 = document.getElementById("canvas1");
-			var con = canvas1.getContext("2d");
-			con.fillStyle = "rgba(255,0,0,1)";
-			con.fillRect(20,40,200,150);
+			try{
+				var canvas1 = document.getElementById("canvas1");
+				var con = canvas1.getContext("2d");
+				con.fillStyle = "rgba(255,0,0,1)";
+				con.fillRect(20,40,200,150);
+			}catch(e){
+				alert(e.description);
+			}
 		}
 		
-		sessionStorage.msg = "テスト";
+		//localStorage.msg = "テスト";
+		
+		window.addEventListener("message", function(event){
+			try{
+				alert(event.origin + ":" + event.data);
+			}catch(e){
+				alert(e.description);
+			}
+		}, false);
+		
+		function testMessage(){
+			try{
+				window.postMessage('test', 'http://localhost:8080/');
+			}catch(e){
+				alert(e.description);
+			}
+		}
+		
+		try{
+			var db = openDatabase("testdb", "", "test", 1024*1024);
+			alert(db);
+		}catch(e){
+			alert(e.description);
+		}
 	//-->
 	</script>
 </head>
 <body onload="onLoad();">
-	<h1>Flickrテスト</h1>
+	<h1>HTML5 テスト</h1>
 	<canvas id="canvas1" width="320" height="240" style="border:1px black solid">
-	</canvas>
+	</canvas><br>
 	<br>
-	<input type="button" value="ストレージテスト" onclick="alert(sessionStorage.msg);">
+	<input type="button" value="ストレージテスト" onclick="alert(localStorage.msg);"><br>
+	<br>
+	プログレス：<progress value="30" max="100"></progress><br>
+	メータ：<meter min="0" max="100" value="75"></meter><br>
+	<br>
+	<input type="button" value="メッセージ" onclick="testMessage();"><br>
+	<br>
+	
 </body>
 </html>

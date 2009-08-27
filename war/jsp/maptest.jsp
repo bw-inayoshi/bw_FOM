@@ -14,6 +14,7 @@
 	    <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAAQOl2RRcJsYdX8o3bAJnpvxQSDgvuLRL42az8R-TnHvBjlZ8zZBSlebLvFRVwlZFRmnPWCzwfIWtrJw"
     	    type="text/javascript" charset="utf-8"></script>
 	<% } %>
+	<script src="../js/controltest.js" type="text/javascript" charset="utf-8"></script>
 	<script type="text/javascript">
 	<!--
 		var map;
@@ -70,7 +71,13 @@
 			map.addControl(new GLargeMapControl());
 			map.addControl(new GMapTypeControl());
 			map.addControl(new GOverviewMapControl());
+			
+			map.addControl(new InputControl());
+			
 			map.setMapType(G_NORMAL_MAP);
+			GEvent.addListener(map, "click", function(oLay, mPnt){
+				document.getElementById("message").innerHTML = mPnt;
+			});
 			
 			GEvent.addListener(map, "zoomend", function(oldLevel, newLevel){
 				var size = map.getSize();
@@ -122,8 +129,9 @@
 	<input type="button" value="範囲入力" id="btnMap" onclick="seqBound()" style="width: 100px">
 	<span id="msg"></span>
 	<br>
-	<div id="map" style="width:800px; height:500px;"></div>
+	<div id="map" style="width:800px; height:600px;"></div>
 	<br>
+    <div id="message"></div>
 	<span id="lengthmsg"></span>
 	<br>
 	<br>

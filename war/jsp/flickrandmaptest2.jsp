@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=utf-8" language="java" %>
 <%
 	String serverName = request.getServerName();
+	String msgOrigin = "";
 %>
 <!DOCTYPE html>
 <html>
@@ -8,10 +9,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
 	<title>Google Map</title>
-	<% if( serverName.equals("localhost") ){ %>
+	<% if( serverName.equals("localhost") ){ 
+		msgOrigin = "http://localhost:8080";	%>
 	    <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAAQOl2RRcJsYdX8o3bAJnpvxTwM0brOpm-All5BF6PoaKBxRWWERSqjpfjjfkG4H9v-B4BS9p0qsqmDA"
     	    type="text/javascript" charset="utf-8"></script>
-	<% }else if( serverName.equals("bw-inayoshi.appspot.com") ){ %>
+	<% }else if( serverName.equals("bw-inayoshi.appspot.com") ){ 
+		msgOrigin = "http://bw-inayoshi.appspot.com";	%>
 	    <script src="http://maps.google.com/maps?file=api&v=2&key=ABQIAAAAQOl2RRcJsYdX8o3bAJnpvxQSDgvuLRL42az8R-TnHvBjlZ8zZBSlebLvFRVwlZFRmnPWCzwfIWtrJw"
     	    type="text/javascript" charset="utf-8"></script>
 	<% } %>
@@ -74,7 +77,7 @@
 	
 		function onLoad() {
 			map = new GMap2(document.getElementById("map"));
-			map.setCenter(new GLatLng(35.53222622770337,139.6973419189453),14);
+			map.setCenter(new GLatLng(35.53222622770337,135.6973419189453),14);
 			map.addControl(new GLargeMapControl());
 			map.addControl(new GMapTypeControl());
 			map.addControl(new GOverviewMapControl());
@@ -90,14 +93,9 @@
 	    	
 			GUnload();
 		}
-		
+
 		// Flickr検索終了後のコールバック関数
 		function jsonFlickrApi ( data ) {
-			if(data.stat != "ok"){
-				alert("検索エラー");
-				return;
-			}
-		
 		    // 現在の表示内容をクリアする
 		    remove_children("photos_info");
 		    remove_children("photos_page_prev");
@@ -105,6 +103,11 @@
 		    remove_children("photos_page");
 		    remove_children( 'photos_here' );
 		    clearMarker();
+
+			if(data.stat != "ok"){
+				alert("検索エラー");
+				return;
+			}
 			
 		    // データが取得できているかチェック
 		    if ( ! data || ! data.photos ){
@@ -123,68 +126,13 @@
 		    }
 		    
 		    // 検索情報
-		    var info = document.createElement("div");
-		    info.style.textAlign = "right";
-		    info.innerText = photos.total
-		    			   + "件中 "
-		    			   + ((photos.page-1) * photos.perpage + 1)
-		    			   + " - "
-		    			   + (photos.page==photos.pages ? (photos.total) : (photos.page * photos.perpage))
-		    			   + " 件目";
-		    document.getElementById("photos_info").appendChild(info);
-		    
+		    setSearchInfo(photos, "photos_info");
 		    // 前ページリンク表示
-		    if( photos.page == 1 ){
-			    var prevl = document.createElement("span");
-		    	prevl.style.color = "gray";
-		    	prevl.innerText = "＜前へ";
-		    	document.getElementById("photos_page_prev").appendChild(prevl);
-		    }else{
-			    var prevl = document.createElement("a");
-			    prevl.href = "javascript: search(" + (photos.page-1) + ");";
-		    	prevl.innerText = "＜前へ";
-		    	document.getElementById("photos_page_prev").appendChild(prevl);
-		    }
-
+		    setPrevLink(photos, "photos_page_prev");
 		    // 次ページリンク表示
-		    if( photos.page == photos.pages ){
-			    var nextl = document.createElement("span");
-		    	nextl.style.color = "gray";
-		    	nextl.innerText = "次へ＞";
-		    	document.getElementById("photos_page_next").appendChild(nextl);
-		    }else{
-			    var nextl = document.createElement("a");
-			    nextl.href = "javascript: search(" + (photos.page+1) + ");";
-		    	nextl.innerText = "次へ＞";
-		    	document.getElementById("photos_page_next").appendChild(nextl);
-		    }
-	    	
+		    setNextLink(photos, "photos_page_next");
 	    	// ページリンク表示
-	    	var pagel = document.createElement("span");
-	    	var pageltop = photos.page - 9;
-	    	if( pageltop < 1 ){
-	    		pageltop = 1;
-	    	}
-	    	var pagelnum = (photos.page - pageltop) + 10;
-	    	
-	    	for(var i = 0; i < pagelnum; i++){
-	    		if( pageltop + i > photos.pages ){
-	    			break;
-	    		}
-	    		
-	    		var pagela = null;
-	    		if( pageltop + i == photos.page ){
-	    			pagela = document.createElement("span");
-	    			pagela.style.color = "gray";
-	    		}else{
-	    			pagela = document.createElement("a");
-	    			pagela.href = "javascript: search(" + (pageltop+i) + ");";
-	    		}
-	    		pagela.innerText = (pageltop+i) + " ";
-	    		pagel.appendChild(pagela);
-	    	}
-	    	document.getElementById("photos_page").appendChild(pagel);
-	    	
+	    	setPageLink(photos, "photos_page");
 		
 		    // 地図上のデータを収集
 		    var amapphoto = new Array();
@@ -221,6 +169,83 @@
 		    // マップ上のデータの初期設定
 		    initMarker(amapphoto);
 		    
+		    // マップ表示領域を再設定
+		    setMapZoom();
+		}
+		
+		// 検索情報表示
+		function setSearchInfo(photos, id){
+		    var info = document.createElement("div");
+		    info.style.textAlign = "right";
+		    info.innerText = photos.total
+		    			   + "件中 "
+		    			   + ((photos.page-1) * photos.perpage + 1)
+		    			   + " - "
+		    			   + (photos.page==photos.pages ? (photos.total) : (photos.page * photos.perpage))
+		    			   + " 件目";
+		    document.getElementById(id).appendChild(info);
+		}
+		
+		// 前へリンクを表示
+		function setPrevLink(photos, id){
+		    if( photos.page == 1 ){
+			    var prevl = document.createElement("span");
+		    	prevl.style.color = "gray";
+		    	prevl.innerText = "＜前へ";
+		    	document.getElementById(id).appendChild(prevl);
+		    }else{
+			    var prevl = document.createElement("a");
+			    prevl.href = "javascript: search(" + (photos.page-1) + ");";
+		    	prevl.innerText = "＜前へ";
+		    	document.getElementById(id).appendChild(prevl);
+		    }
+		}
+		
+		// 次へリンクを表示
+		function setNextLink(photos, id){
+		    if( photos.page == photos.pages ){
+			    var nextl = document.createElement("span");
+		    	nextl.style.color = "gray";
+		    	nextl.innerText = "次へ＞";
+		    	document.getElementById(id).appendChild(nextl);
+		    }else{
+			    var nextl = document.createElement("a");
+			    nextl.href = "javascript: search(" + (photos.page+1) + ");";
+		    	nextl.innerText = "次へ＞";
+		    	document.getElementById(id).appendChild(nextl);
+		    }
+		}
+		
+		// ページリンクを表示
+		function setPageLink(photos, id){
+	    	var pagel = document.createElement("span");
+	    	var pageltop = photos.page - 9;
+	    	if( pageltop < 1 ){
+	    		pageltop = 1;
+	    	}
+	    	var pagelnum = (photos.page - pageltop) + 10;
+	    	
+	    	for(var i = 0; i < pagelnum; i++){
+	    		if( pageltop + i > photos.pages ){
+	    			break;
+	    		}
+	    		
+	    		var pagela = null;
+	    		if( pageltop + i == photos.page ){
+	    			pagela = document.createElement("span");
+	    			pagela.style.color = "gray";
+	    		}else{
+	    			pagela = document.createElement("a");
+	    			pagela.href = "javascript: search(" + (pageltop+i) + ");";
+	    		}
+	    		pagela.innerText = (pageltop+i) + " ";
+	    		pagel.appendChild(pagela);
+	    	}
+	    	document.getElementById(id).appendChild(pagel);
+		}
+		
+		// 全データを表示する位置とズームに調整
+		function setMapZoom(){
 		    if(amarker.length != 0){
 			    // マップ表示領域を再設定
 			    var markerBounds = new GLatLngBounds(amarker[0].getLatLng(), amarker[0].getLatLng());
@@ -230,6 +255,9 @@
 			    }
 			    
 			    var zoom = map.getBoundsZoomLevel(markerBounds);
+			    if(zoom > 1){
+			    	zoom--;
+			    }
 			    map.setCenter(markerBounds.getCenter(), zoom);
 		    }
 		}
@@ -529,14 +557,22 @@
 			
 	        return info;
 		}
-
+		
 		function search(pagenum) {
+			try{
+				window.postMessage(pagenum, "<%= msgOrigin %>/");
+			}catch(e){
+				alert(e.description);
+			}
+		}
+		
+		window.addEventListener("message", function(event){
 			var textvalue = form.search_save.value;
 			form.search_text.value = textvalue;
 			
 			var param = new Object();
 			param.per_page = 20;
-			param.page = pagenum;
+			param.page = event.data;
 			param.extras = "geo";
 			if(textvalue != ""){
 				param.text = textvalue;
@@ -551,7 +587,7 @@
 						   + form.search_north.value;
 			}
 			photo_search(param, "jsonFlickrApi");
-		}
+		}, false);
 		
 		function newSearch(){
 			form.search_save.value = form.search_text.value;
@@ -628,6 +664,13 @@
 	検索の範囲は矩形でなければならず、<br>
 	領域内のものだけ表示するとページごとの表示数が変わるため、<br>
 	このような処理をすることにしました。<br>
+	<br>
+	<br>
+	検索時の処理を非同期にしました。<br>
+	<br>
+	非同期処理にはクロスドキュメントメッセージングという機能を使っています。<br>
+	これは元々ウィンドウ（フレーム）間でメッセージの送受信を行うものですが、<br>
+	処理は非同期で行われるようなのでこれを使用しました。<br>
 	<br>
 </body>
 </html>
