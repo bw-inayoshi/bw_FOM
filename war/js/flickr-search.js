@@ -166,21 +166,86 @@ function isInBound(photo){
 }
 
 // 近いと判断する距離
-var NEAR_AREA_X = 15;
+var NEAR_AREA_X = 18;
 var NEAR_AREA_Y = 20;
 
 // 近くのデータのインデックスリストを取得
 function getNearData(zoomlv, photo, adata){
 	var anear = new Array();
-	anear.length = 0;
+	var anearlen = new Array();
 
+	// 近い場所のインデックスを収集
+	var num = getNearLength(zoomlv, photo, adata, anear, anearlen);
+	
+	if(num == 0){
+		return null;
+	}
+	
+	// 逆検索
+	num = 0;
+	var arnear = new Array();
+	arnear.length = 0;
+	for(var k = 0; k < anear.length; k++){
+		// グループ候補に近い場所のデータを収集
+		var anearnear = new Array();
+		var anearnearlen = new Array();
+		if( getNearLength(zoomlv, adata[ anear[k] ], adata, anearnear, anearnearlen) == 0 ){
+			arnear.push(anear[k]);
+			num++;
+			continue;
+		}
+		
+		// 基準より近いデータがグループ外にあればグループから外す
+		var isnear = true;
+		for(var m = 0; m < anearnear.length; m++){
+			if(photo == adata[ anearnear[m] ]){
+				continue;
+			}
+			
+			// グループ内判定
+			var isgroup = false;
+			for(var n = 0; n < anear.length; n++){
+				if(anear[n] == anearnear[m]){
+					isgroup = true;
+					break;
+				}
+			}
+			if(isgroup){
+				continue;
+			}
+			
+			// グループ外のデータとの距離を判定
+			if(anearnearlen[m] < anearlen[k]){
+				isnear = false;
+				break;
+			}
+		}
+		if(isnear){
+			arnear.push(anear[k]);
+			num++;
+		}
+	}
+	
+	if(num == 0){
+		return null;
+	}
+	return arnear;
+}
+
+// 近い場所のインデックスと距離を収集
+function getNearLength(zoomlv, photo, adata, anear, anearlen){
+	var ret = 0;
+	anear.length = 0;
+	anearlen.length = 0;
+	
 	// 近い場所のインデックスを収集
 	for(var j = 0; j < adata.length; j++){
 		var target = adata[j];
 		if( target == null ){
 			continue;
 		}else if(target == photo){
-			anear.push(j);
+//			anear.push(j);
+//			anearlen.push(-1);
 			continue;
 		}
 		
@@ -196,43 +261,11 @@ function getNearData(zoomlv, photo, adata){
 		}
 		
 		anear.push(j);
+		anearlen.push(dx+dy);
+		ret++;
 	}
 	
-	if(anear.length < 2){
-		return anear;
-	}
-	
-	// 逆検索
-	var arnear = new Array();
-	arnear.length = 0;
-	for(var k = 0; k < anear.length; k++){
-		if(photo == adata[ anear[k] ]){
-			arnear.push(anear[k]);
-			continue;
-		}
-		
-		// グループ候補から一番近いデータを取る
-		var nearest = getNearestDataIndex(zoomlv, adata[ anear[k] ], adata);
-		if(nearest == -1){
-			arnear.push(anear[k]);
-			continue;
-		}
-		
-		// 一番近いデータがグループ候補内にあればグループとする
-		var isnear = false;
-		for(var m = 0; m < anear.length; m++){
-			if(anear[m] == nearest){
-				isnear = true;
-				break;
-			}
-		}
-		if(isnear){
-			arnear.push(anear[k]);
-		}
-	}
-	arnear.sort();
-	
-	return arnear;
+	return ret;
 }
 
 // 一番近くのデータのデータを取得

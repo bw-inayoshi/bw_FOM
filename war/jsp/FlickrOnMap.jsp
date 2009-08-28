@@ -142,18 +142,8 @@
 			        	div.appendChild( document.createElement("br") );
 			        }
 			        
-			        // img 要素の生成
-			        var img = document.createElement( 'img' );
-			        img.src = getSImgUrl(photo);
-			        img.style.border = '0';
-			        
-			        // a 要素の生成
-			        var atag = document.createElement( 'a' );
-					atag.href = getFLinkUrl(photo);
-			        atag.target = "_blank";
-		
-			        atag.appendChild( img );
-			        div.appendChild( atag );
+			        // 画像表示
+			        div.appendChild( makeImageNode(photo) );
 			        outnum++;
 		        }else{
 		       		amapphoto.push(photo);
@@ -326,13 +316,17 @@
 					
 					// 近くのデータを検索
 					var anear = getNearData(i, photo, photoList2);
-					if( anear.length == 1 && anear[0] == j ){
+					if( anear == null ){
 						// 近くのものが無い
 						photoList[j] = null;
 						photoList2[j] = null;
 						markerManager.addMarker(amarker[j], i);
 						continue;
 					}
+					
+					// 自分のデータを追加
+					anear.push(j);
+					anear.sort();
 					
 					// 周囲のデータを検索から除外
 					for(var k = 0; k < anear.length; k++){
@@ -388,6 +382,8 @@
 	        var img = document.createElement("img");
 	        img.src = getSImgUrl(photo);
 	        img.style.border = '0';
+	        img.width = 75;
+	        img.height = 75;
 	        
 	        // a 要素の生成
 	        var atag = document.createElement("a");
@@ -607,6 +603,7 @@
 
 		// 新規の検索
 		function newSearch(){
+			fcontrol.search.blur();
 			fcontrol.save.value = fcontrol.search.value;
 			if(bound != null){
 				var llbounds = bound.getBounds();
@@ -633,18 +630,12 @@
 	</script>
 </head>
 <body onload="onLoad()" onunload="unload()">
-	<div id="photos_info"></div>
-	<table width="100%" summary="">
-		<tr>
-			<td align="left" id="photos_page_prev"></td>
-			<td align="center" id="photos_page"></td>
-			<td align="right" id="photos_page_next"></td>
-		</tr>
-	</table>
-	<div id="map" style="width:800px; height:600px;"></div>
+	<fieldset style="width:770px">
+		<legend>地図上に表示できない写真</legend>
+		<div id="photos_here"></div>
+	</fieldset>
 	<br>
-	地図上に表示できない画像<br>
-	<div id="photos_here"></div>
+	<div id="map" style="width:800px; height:600px;"></div>
 	<br>
 </body>
 </html>
