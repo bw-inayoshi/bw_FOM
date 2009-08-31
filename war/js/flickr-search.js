@@ -244,41 +244,6 @@ function getNearLength(zoomlv, photo, adata, anear, anearlen){
 		if( target == null ){
 			continue;
 		}else if(target == photo){
-//			anear.push(j);
-//			anearlen.push(-1);
-			continue;
-		}
-		
-		// 画面上の距離を判定
-		var dx = getLengthFromDistance(subLng(photo.longitude, target.longitude), zoomlv);
-		var dy = getLengthFromDistance(subLat(photo.latitude, target.latitude), zoomlv);
-		if( dx > NEAR_AREA_X ){
-			// 遠い
-			continue;
-		}else if ( dy > NEAR_AREA_Y ){
-			// 検索データは縦方向に並んでいるはず
-			break;
-		}
-		
-		anear.push(j);
-		anearlen.push(dx+dy);
-		ret++;
-	}
-	
-	return ret;
-}
-
-// 一番近くのデータのデータを取得
-function getNearestDataIndex(zoomlv, photo, adata){
-	var len = NEAR_AREA_X+NEAR_AREA_Y;
-	var est = -1;
-
-	// 近い場所のイメージノードを取得
-	for(var j = 0; j < adata.length; j++){
-		var target = adata[j];
-		if( target == null ){
-			continue;
-		}else if(target == photo){
 			continue;
 		}
 		
@@ -288,13 +253,15 @@ function getNearestDataIndex(zoomlv, photo, adata){
 		if( dx > NEAR_AREA_X || dy > NEAR_AREA_Y ){
 			// 遠い
 			continue;
+//		}else if ( dy > NEAR_AREA_Y ){
+			// 検索データは縦方向に並んでいるはず
+//			break;
 		}
-						
-		if(len > dx+dy){
-			len = dx+dy;
-			est = j;
-		}
+		
+		anear.push(j);
+		anearlen.push(dx+dy);
+		ret++;
 	}
 	
-	return est;
+	return ret;
 }
